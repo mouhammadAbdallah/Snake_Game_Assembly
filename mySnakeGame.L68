@@ -1,0 +1,596 @@
+00001000 Starting Address
+Assembler used: EASy68K Editor/Assembler v5.16.01
+Created On: 11-Mar-20 1:17:10 PM
+
+00000000                             1  
+00000000                             2  *-----------------------------------------------------------
+00000000                             3  * Title      :Snake Game
+00000000                             4  * Written by :Mohamad Abdallah
+00000000                             5  * Date       :15-12-2019
+00000000                             6  * Description:manual and smart snake
+00000000                             7  *-----------------------------------------------------------
+00000000                             8  
+00000000                             9  * Delay for hundredths of a second in param 1
+00000000                            10  DELAY    MACRO
+00000000                            11      move.b  #23,d0          trap task 23
+00000000                            12      move.l  #\1,d1          delay amount
+00000000                            13      trap    #15
+00000000                            14      ENDM
+00000000                            15      
+00000000                            16      
+00001000                            17      ORG    $1000
+00001000                            18  START:                  ; first instruction of program
+00001000                            19  
+00001000                            20  * Put program code here
+00001000                            21  
+00001000  103C 0021                 22      MOVE.B #33,D0
+00001004  223C 05000320             23      MOVE.L #1280*$10000+800,D1  Set screen to 1280 x 800
+0000100A  4E4F                      24      TRAP   #15
+0000100C                            25          
+0000100C                            26      
+0000100C                            27      ;snake of 1
+0000100C  33FC 0001 0000158C        28      move.w #1,N
+00001014                            29      ;snake beginning position
+00001014  33FC 0190 0000159A        30      move.w #(20*snakeSquare),X
+0000101C  33FC 00C8 0000159C        31      move.w #(10*snakeSquare),Y
+00001024                            32      ;feed beginning position
+00001024  33FC 00C8 0000158E        33      move.w #(10*snakeSquare),XF
+0000102C  33FC 00C8 00001590        34      move.w #(10*snakeSquare),YF
+00001034                            35      ;snake beginning direction 
+00001034  33FC FFEC 00001596        36      move.w #(-snakeSquare),dXN
+0000103C  33FC 0000 00001598        37      move.w #0,dYN
+00001044                            38      ;no smart snake
+00001044  13FC 0000 00001578        39      move.b #0,smart
+0000104C                            40      ;no grid
+0000104C  13FC 0000 0000157B        41      move.b #0,grid
+00001054                            42      
+00001054                            43  loop 
+00001054  4EB9 000011B4             44      JSR refresh 
+0000105A  103C 0007                 45      move.b  #7,d0                   ; check for pending key press
+0000105E  4E4F                      46      trap    #15
+00001060  4A01                      47      tst.b d1
+00001062  6700 014C                 48      beq endif
+00001066                            49  
+00001066  103C 0005                 50        move.b    #5,d0               ; read key
+0000106A  4E4F                      51        trap      #15
+0000106C                            52        if.b d1 <eq> #'6' then.s      ; if '6' pressed
+00001072  13FC 0000 00001578        53          move.b #0,smart
+0000107A  3A39 00001596             54          move.w dXN,d5
+00001080  6DD2                      55          blt loop
+00001082  33FC 0014 00001596        56          move.w #snakeSquare,dXN
+0000108A  33FC 0000 00001598        57          move.w #0,dYN
+00001092                            58  
+00001092                            59        endi
+00001092                            60         if.b d1 <eq> #'g' then.s      ; if 'g pressed
+00001098  13FC 0001 0000157B        61          move.b #1,grid
+000010A0                            62         endi
+000010A0                            63         if.b d1 <eq> #'h' then.s      ; if 'h pressed
+000010A6  13FC 0000 0000157B        64          move.b #0,grid
+000010AE                            65         endi
+000010AE                            66        if.b d1 <eq> #'8' then.s      ; if '8' pressed
+000010B4  13FC 0000 00001578        67          move.b #0,smart
+000010BC  3A39 00001598             68          move.w dYN,d5
+000010C2  6290                      69          BHI loop
+000010C4  33FC 0000 00001596        70          move.w #0,dXN
+000010CC  33FC FFEC 00001598        71          move.w #(-snakeSquare),dYN
+000010D4                            72  
+000010D4                            73         endi
+000010D4                            74        if.b d1 <eq> #'4' then.s      ; if '4' pressed
+000010DA  13FC 0000 00001578        75          move.b #0,smart
+000010E2  3A39 00001596             76          move.w dXN,d5
+000010E8  6E00 FF6A                 77          Bgt loop
+000010EC  33FC FFEC 00001596        78          move.w #(-snakeSquare),dXN
+000010F4  33FC 0000 00001598        79          move.w #0,dYN
+000010FC                            80        endi
+000010FC                            81        if.b d1 <eq> #'5' then.s      ; if '5' pressed
+00001102  13FC 0000 00001578        82          move.b #0,smart
+0000110A  3A39 00001598             83          move.w dYN,d5
+00001110  6D00 FF42                 84          blt loop
+00001114  33FC 0000 00001596        85          move.w #0,dXN
+0000111C  33FC 0014 00001598        86          move.w #snakeSquare,dYN
+00001124                            87  
+00001124                            88        endi
+00001124  B23C 0073                 89        cmp.b #'s',d1 ; if 's' pressed
+00001128  6600 0086                 90        bne endif1
+0000112C                            91        ;if.b d1 <eq> #'s' then.s      ; if 's' pressed
+0000112C  13FC 0001 00001578        92          move.b #1,smart ;smart mood
+00001134                            93          
+00001134  3A39 00001596             94  sss     move.w dXN,d5
+0000113A  6700 0074                 95          beq smy
+0000113E                            96          ;dx!=0
+0000113E  13FC 0001 00001579        97          move.b #1,smartX
+00001146  33FC 0000 00001596        98          move.w #0,dXN
+0000114E  3A39 00001590             99          move.w YF,d5
+00001154  BA79 0000159C            100          cmp.w Y,d5
+0000115A  6F00 000E                101          ble else0
+0000115E  33FC 0014 00001598       102          move.w #snakeSquare,dYN
+00001166  6000 000A                103          bra fin0
+0000116A  33FC FFEC 00001598       104  else0   move.w #(-snakeSquare),dYN
+00001172  3039 0000159A            105  fin0    move.w X,d0
+00001178  3639 0000158C            106          move.w N,d3
+0000117E  41F9 0000159A            107          lea X,A0
+00001184  5343                     108  chk0    subq #1,d3
+00001186  6700 0028                109          beq nopb0
+0000118A  5048                     110          addq #8,A0
+0000118C  B050                     111          cmp.w (A0),d0
+0000118E  66F4                     112          bne chk0
+00001190  3C28 0002                113          move.w 2(A0),d6
+00001194  9C79 0000159C            114          sub.w Y,d6
+0000119A  3A28 0002                115          move.w 2(A0),d5
+0000119E  9A79 00001590            116          sub.w YF,d5
+000011A4  CDC5                     117          muls.w d5,d6
+000011A6  6C00 0008                118          bge nopb0
+000011AA  4479 00001598            119          neg.w dYN
+000011B0                           120  
+000011B0                           121  
+000011B0                           122  smy
+000011B0                           123  nopb0        
+000011B0                           124  endif1
+000011B0                           125  
+000011B0                           126  endif 
+000011B0                           127  
+000011B0                           128    
+000011B0  6000 FEA2                129      bra     loop 
+000011B4                           130  
+000011B4                           131  
+000011B4                           132  refresh
+000011B4  4EB9 000014D8            133          JSR clrScreen
+000011BA                           134          
+000011BA  4A39 00001578            135          tst.b smart
+000011C0  6700 008E                136          beq nosmart
+000011C4  4A39 00001579            137          tst.b smartX
+000011CA  6700 0084                138          beq maybey
+000011CE  3639 00001590            139          move.w YF,d3
+000011D4  B679 0000159C            140          cmp.w Y,d3
+000011DA  6600 0074                141          bne nosmart
+000011DE  13FC 0000 00001579       142          move.b #0,smartX
+000011E6  33FC 0000 00001598       143          move.w #0,dYN
+000011EE  3A39 0000158E            144          move.w XF,d5
+000011F4  BA79 0000159A            145          cmp.w X,d5
+000011FA  6F00 000E                146          ble else1
+000011FE  33FC 0014 00001596       147          move.w #snakeSquare,dXN
+00001206  6000 000A                148          bra fin1
+0000120A  33FC FFEC 00001596       149  else1   move.w #(-snakeSquare),dXN
+00001212  3039 0000159C            150  fin1    move.w Y,d0
+00001218  3639 0000158C            151          move.w N,d3
+0000121E  41F9 0000159C            152          lea Y,A0
+00001224  5343                     153  chk1    subq #1,d3
+00001226  6700 0028                154          beq nopb1
+0000122A  5048                     155          addq #8,A0
+0000122C  B050                     156          cmp.w (A0),d0
+0000122E  66F4                     157          bne chk1
+00001230  3C28 FFFE                158          move.w -2(A0),d6
+00001234  9C79 0000159A            159          sub.w X,d6
+0000123A  3A28 FFFE                160          move.w -2(A0),d5
+0000123E  9A79 0000158E            161          sub.w XF,d5
+00001244  CDC5                     162          muls.w d5,d6
+00001246  6C00 0008                163          bge nopb1
+0000124A  4479 00001596            164          neg.w dXN
+00001250                           165          
+00001250                           166  nopb1       
+00001250                           167  maybey        
+00001250                           168          
+00001250                           169  ; calculate the future deltax and deltay for all the part of the snake
+00001250  3039 0000158C            170  nosmart move.w N,d0
+00001256  B07C 0001                171          cmp.w #1,d0
+0000125A  6700 0024                172          beq nothingToDo
+0000125E                           173          
+0000125E  41F9 0000159A            174          lea X,A0
+00001264  3200                     175          move.w d0,d1
+00001266  C2FC 0008                176          mulu #8,d1
+0000126A  D0C1                     177          adda.w d1,A0
+0000126C  90FC 000C                178          suba.w #12,A0
+00001270                           179  otherPart        
+00001270  2C10                     180          move.l (A0),d6
+00001272  2146 0008                181          move.l d6,$0008(A0)
+00001276  5148                     182          subq #8,A0
+00001278  5340                     183          subq #1,d0
+0000127A  B07C 0001                184          cmp.w #1,d0
+0000127E  66F0                     185          bne otherPart
+00001280                           186          
+00001280                           187          
+00001280                           188          
+00001280                           189  nothingToDo
+00001280  23F9 00001596 0000159E   190          move.l dXN,deltaX
+0000128A                           191          ;the next X
+0000128A  41F9 0000159A            192          lea X,A0
+00001290  43F9 0000159C            193          lea Y,A1
+00001296  45F9 0000159E            194          lea deltaX,A2
+0000129C  47F9 000015A0            195          lea deltaY,A3
+000012A2  3639 0000158C            196          move.w N,d3
+000012A8                           197          
+000012A8                           198  otherPoint
+000012A8  3010                     199          move.w (A0),d0
+000012AA  3211                     200          move.w (A1),d1
+000012AC  D052                     201          add.w (A2),d0
+000012AE  B07C 0500                202          cmp.w #1280,d0
+000012B2  6D00 000A                203          blt xch
+000012B6  3038 0000                204          move.w 0,d0
+000012BA  6000 002E                205          bra yok ;xok
+000012BE  B07C 0000                206  xch     cmp.w #0,d0
+000012C2  6C00 0006                207          bge xok
+000012C6  303C 04EC                208          move.w #(1280-snakeSquare),d0 
+000012CA                           209          
+000012CA                           210          ;the next Y
+000012CA  3211                     211  xok     move.w (A1),d1
+000012CC  D253                     212          add.w (A3),d1
+000012CE  B27C 0320                213          cmp.w #800,d1
+000012D2  6D00 000A                214          blt ych
+000012D6  3238 0000                215          move.w 0,d1
+000012DA  6000 000E                216          bra yok 
+000012DE  B27C 0000                217  ych     cmp.w #0,d1
+000012E2  6C00 0006                218          bge yok
+000012E6  323C 030C                219          move.w #(800-snakeSquare),d1
+000012EA                           220          
+000012EA  3080                     221  yok     move.w d0,(A0)
+000012EC  3281                     222          move.w d1,(A1)
+000012EE                           223          
+000012EE  5048                     224          addq #8,A0
+000012F0  5049                     225          addq #8,A1
+000012F2  504A                     226          addq #8,A2
+000012F4  504B                     227          addq #8,A3
+000012F6  5343                     228          subq #1,d3
+000012F8  66AE                     229          bne otherPoint
+000012FA                           230          
+000012FA                           231      ;draw the snake
+000012FA                           232      
+000012FA  223C 00800000            233           move.l  #NAVY,d1   
+00001300  103C 0050                234           move.b  #80,d0  set pen color
+00001304  4E4F                     235           trap #15     
+00001306                           236  
+00001306  223C 000000FF            237           move.l  #RED,d1   
+0000130C  103C 0051                238           move.b  #81,d0  set fill color
+00001310  4E4F                     239           trap #15 
+00001312                           240      
+00001312  41F9 0000159A            241          lea X,A0
+00001318  43F9 0000159C            242          lea Y,A1
+0000131E  3C39 0000158C            243          move.w N,d6
+00001324                           244  
+00001324                           245  drawOtherPoint             
+00001324  3210                     246          move.w  (A0),d1      LX        draw snake
+00001326  3411                     247          move.w  (A1),d2      UY 
+00001328  3601                     248          move.w  d1,d3   RX
+0000132A  0643 0014                249          addi.w  #snakeSquare,d3
+0000132E  3802                     250          move.w  d2,d4     LY 
+00001330  0644 0014                251          addi.w  #snakeSquare,d4
+00001334  103C 0057                252          move.b  #87,d0     draw filled rectangle
+00001338  4E4F                     253          trap #15
+0000133A                           254          
+0000133A  5048                     255          addq #8,A0
+0000133C  5049                     256          addq #8,A1
+0000133E  5346                     257          subq #1,d6
+00001340  66E2                     258          bne drawOtherPoint
+00001342                           259          
+00001342                           260          ; draw the feed
+00001342  223C 00FFFF00            261           move.l  #AQUA,d1   
+00001348  103C 0050                262           move.b  #80,d0  set pen color
+0000134C  4E4F                     263           trap #15     
+0000134E                           264  
+0000134E  223C 00FF0000            265           move.l  #BLUE,d1   
+00001354  103C 0051                266           move.b  #81,d0  set fill color
+00001358  4E4F                     267           trap #15     
+0000135A                           268          
+0000135A                           269          
+0000135A                           270          
+0000135A  3239 0000158E            271          move.w  XF,d1      LX       draw feed
+00001360  3439 00001590            272          move.w  YF,d2      UY 
+00001366  3601                     273          move.w  d1,d3   RX
+00001368  0643 0014                274          addi.w  #snakeSquare,d3
+0000136C  3802                     275          move.w  d2,d4     LY 
+0000136E  0644 0014                276          addi.w  #snakeSquare,d4
+00001372  103C 0057                277          move.b  #87,d0     draw filled rectangle
+00001376  4E4F                     278          trap #15
+00001378                           279          
+00001378                           280          ;detect if the snake in accident
+00001378  327C 159A                281          move.w #X,A1
+0000137C  347C 159C                282          move.w #Y,A2
+00001380  3239 0000159A            283          move.w X,d1
+00001386  3439 0000159C            284          move.w Y,d2
+0000138C  3039 0000158C            285          move.w N,D0
+00001392  B07C 0001                286          cmp.w #1,D0
+00001396  6700 0048                287          beq noPb
+0000139A  5049                     288  notpb   adda #8,A1
+0000139C  504A                     289          adda #8,A2
+0000139E  5340                     290          subq #1,d0
+000013A0  B07C 0001                291          cmp.w #1,d0
+000013A4  6700 003A                292          beq noPb
+000013A8  3611                     293          move.w (A1),d3
+000013AA  B641                     294          cmp.w d1,d3
+000013AC  66EC                     295          bne notpb
+000013AE  3812                     296          move.w (A2),d4
+000013B0  B842                     297          cmp.w d2,d4
+000013B2  66E6                     298          bne notpb
+000013B4                           299          ;sound
+000013B4  43F9 0000157C            300  playr   lea   missSound,a1
+000013BA  303C 0046                301          move    #70,d0
+000013BE  4E4F                     302          trap    #15    
+000013C0  4A40                     303          tst.w   d0              d0 = 0 if player is busy
+000013C2  67F0                     304          beq     playr           loop until sound plays
+000013C4                           305m         DELAY 100
+000013CC  43F9 00001585            306  playr1  lea   zeroSound,a1
+000013D2  303C 0046                307          move    #70,d0
+000013D6  4E4F                     308          trap    #15    
+000013D8  4A40                     309          tst.w   d0              d0 = 0 if player is busy
+000013DA  67F0                     310          beq     playr1          loop until sound plays
+000013DC  6000 FC22                311          bra START
+000013E0                           312          
+000013E0                           313          ;detect if the snake finds the feed 
+000013E0  3039 0000159A            314  noPb    move.w X,d0
+000013E6  3239 0000158E            315          move.w XF,d1
+000013EC  B240                     316          cmp.w d0,d1
+000013EE  6600 00DE                317          bne continue
+000013F2  3039 0000159C            318          move.w Y,d0
+000013F8  3239 00001590            319          move.w YF,d1
+000013FE  B240                     320          cmp.w d0,d1
+00001400  6600 00CC                321          bne continue
+00001404                           322          
+00001404                           323          ;sound when a feed is eaten
+00001404  43F9 0000157C            324  playr0   lea   missSound,a1
+0000140A  303C 0046                325          move    #70,d0
+0000140E  4E4F                     326          trap    #15    
+00001410  4A40                     327          tst.w   d0              d0 = 0 if player is busy
+00001412  67F0                     328          beq     playr0           loop until sound plays
+00001414                           329          
+00001414                           330  
+00001414                           331     
+00001414                           332         ;place the new feed when the snake finds the feed 
+00001414                           333          ;determine the X feed 
+00001414                           334  anotherone
+00001414  103C 0008                335          move.b  #8,d0       Read timer, get 100ths of a second since midnight in D1.L
+00001418  4E4F                     336          trap    #15
+0000141A  C2BC 04FFFFFF            337          and.l   #$04FFFFFF,d1 
+00001420  82FC 0500                338          divu #1280,d1  
+00001424  4841                     339          swap d1
+00001426  4282                     340          clr.l d2
+00001428  3401                     341          move.w d1,d2
+0000142A  84FC 0014                342          divu #snakeSquare,d2
+0000142E  4283                     343          clr.l d3
+00001430  3602                     344          move.w d2,d3
+00001432  C6FC 0014                345          mulu #snakeSquare,d3
+00001436  33C3 0000158E            346          move.w d3,XF
+0000143C                           347          
+0000143C                           348          ;determine the Y feed
+0000143C                           349          
+0000143C  103C 0008                350          move.b  #8,d0       Read timer, get 100ths of a second since midnight in D1.L
+00001440  4E4F                     351          trap    #15
+00001442  C2BC 02FFFFFF            352          and.l   #$02FFFFFF,d1
+00001448  82FC 0320                353          divu #800,d1  
+0000144C  4841                     354          swap d1
+0000144E  4282                     355          clr.l d2
+00001450  3401                     356          move.w d1,d2
+00001452  84FC 0014                357          divu #snakeSquare,d2
+00001456  4283                     358          clr.l d3
+00001458  3602                     359          move.w d2,d3
+0000145A  C6FC 0014                360          mulu #snakeSquare,d3
+0000145E  33C3 00001590            361          move.w d3,YF
+00001464                           362          
+00001464  B679 00001594            363          cmp.w YFE,d3
+0000146A  67A8                     364          beq anotherone
+0000146C  3839 0000158E            365          move.w XF,d4
+00001472  B879 00001592            366          cmp.w XFE,d4
+00001478  679A                     367          beq anotherone
+0000147A  33C4 00001592            368          move.w d4,XFE
+00001480  33C3 00001594            369          move.w d3,YFE
+00001486                           370          
+00001486                           371          ;create new square 
+00001486  3039 0000158C            372          move.w N,d0
+0000148C  41F9 0000159A            373          lea X,A0
+00001492  3200                     374          move.w d0,d1
+00001494  C2FC 0008                375          mulu.w #8,d1
+00001498  D0C1                     376          adda.w d1,A0
+0000149A  5148                     377          subq #8,A0
+0000149C  3218                     378          move.w (A0)+,d1   ;X
+0000149E  3418                     379          move.w (A0)+,d2  ;Y
+000014A0  3618                     380          move.w (A0)+,d3   ;dX
+000014A2  3818                     381          move.w (A0)+,d4  ;dY
+000014A4  9243                     382          sub.w d3,d1
+000014A6  9444                     383          sub.w d4,d2
+000014A8  30C1                     384          move.w d1,(A0)+
+000014AA  30C2                     385          move.w d2,(A0)+
+000014AC  30C3                     386          move.w d3,(A0)+
+000014AE  3084                     387          move.w d4,(A0)
+000014B0  5240                     388          addq #1,d0
+000014B2  33C0 0000158C            389          move.w d0,N
+000014B8                           390          ;end of creating*       
+000014B8                           391   
+000014B8                           392  ;change smartness when feed is eaten in smart mode
+000014B8  4A39 00001578            393          tst.b smart
+000014BE  6700 000E                394          beq nosmart2
+000014C2                           395m         DELAY 7
+000014CA  6000 FC68                396          bra sss
+000014CE                           397  
+000014CE                           398  nosmart2    
+000014CE                           399          
+000014CE                           400          
+000014CE                           401              
+000014CE                           402  continue   
+000014CE                           403m         DELAY 7
+000014D6  4E75                     404          RTS  
+000014D8                           405   
+000014D8                           406  clrScreen    
+000014D8  223C 00000000            407      move.l  #BLACK,d1   
+000014DE  103C 0050                408      move.b  #80,d0  set pen color
+000014E2  4E4F                     409      trap #15     
+000014E4                           410  
+000014E4  223C 00000000            411      move.l  #BLACK,d1   
+000014EA  103C 0051                412      move.b  #81,d0  set fill color
+000014EE  4E4F                     413      trap #15
+000014F0                           414      
+000014F0  323C 0000                415      move.w  #0,d1      LX       black screen
+000014F4  343C 0000                416      move.w  #0,d2      UY 
+000014F8  363C 0500                417      move.w  #1280,d3   RX 
+000014FC  383C 0320                418      move.w  #800,d4     LY 
+00001500  103C 0057                419      move.b  #87,d0     draw filled rectangle
+00001504  4E4F                     420      trap #15
+00001506                           421      
+00001506                           422      ;lines
+00001506  4280                     423      clr.l d0
+00001508  1039 0000157B            424      move.b grid,d0
+0000150E  6700 0062                425      beq nogrid
+00001512                           426      ;for lines
+00001512  223C 00808000            427      move.l  #TEAL,d1   
+00001518  103C 0050                428      move.b  #80,d0  set pen color
+0000151C  4E4F                     429      trap #15     
+0000151E                           430  
+0000151E  223C 00808000            431      move.l  #TEAL,d1   
+00001524  103C 0051                432      move.b  #81,d0  set fill color
+00001528  4E4F                     433      trap #15
+0000152A                           434      
+0000152A  343C 0000                435      move.w  #0,d2      Y1 
+0000152E  383C 0320                436      move.w  #800,d4     Y2
+00001532  323C 0000                437      move.w  #0,d1      X1       
+00001536  363C 0000                438      move.w  #0,d3   X2
+0000153A                           439  
+0000153A                           440  nextline
+0000153A  0641 0014                441      add.w #snakeSquare,d1
+0000153E  0643 0014                442      add.w #snakeSquare,d3
+00001542  103C 0054                443      move.b  #84,d0     draw line
+00001546  4E4F                     444      trap #15
+00001548  B27C 0500                445      cmp.w #1280,d1
+0000154C  66EC                     446      bne nextline   
+0000154E                           447      ;horizantal line
+0000154E  323C 0000                448      move.w  #0,d1      X1 
+00001552  363C 0500                449      move.w  #1280,d3     X2
+00001556  343C 0000                450      move.w  #0,d2      Y1       
+0000155A  383C 0000                451      move.w  #0,d4   Y2
+0000155E                           452  
+0000155E                           453  nextlineh
+0000155E  0642 0014                454      add.w #snakeSquare,d2
+00001562  0644 0014                455      add.w #snakeSquare,d4
+00001566  103C 0054                456      move.b  #84,d0     draw line
+0000156A  4E4F                     457      trap #15
+0000156C  B47C 0320                458      cmp.w #800,d2
+00001570  66EC                     459      bne nextlineh
+00001572                           460  
+00001572                           461  nogrid
+00001572  4E75                     462      RTS
+00001574                           463  
+00001574  FFFF FFFF                464      SIMHALT             ; halt simulator
+00001578                           465    
+00001578                           466        
+00001578                           467  * Put variables and constants here
+00001578= 00                       468  smart dc.b 0
+00001579= 00                       469  smartX dc.b 0
+0000157A= 00                       470  smartY dc.b 0
+0000157B= 00                       471  grid dc.b 0
+0000157C= 6D 69 73 73 2E 77 ...    472  missSound   dc.b    'miss.wav',0 
+00001585= 30 2E 77 61 76 00        473  zeroSound   dc.b    '0.wav',0 
+0000158C= 0000                     474  N DC.W 0
+0000158E= 0000                     475  XF DC.W 0
+00001590= 0000                     476  YF DC.W 0
+00001592= 0000                     477  XFE DC.W 0
+00001594= 0000                     478  YFE DC.W 0
+00001596= 0000                     479  dXN DC.W 0
+00001598= 0000                     480  dYN DC.W 0
+0000159A= 0000                     481  X DC.W 0
+0000159C= 0000                     482  Y DC.W 0
+0000159E= 0000                     483  deltaX DC.W 0
+000015A0= 0000                     484  deltaY DC.W 0
+000015A2                           485  
+000015A2  =00000014                486  snakeSquare EQU 20
+000015A2                           487  
+000015A2                           488  
+000015A2  =00000000                489  BLACK   EQU    $00000000
+000015A2  =00000080                490  MAROON  EQU    $00000080
+000015A2  =00008000                491  GREEN   EQU    $00008000
+000015A2  =00008080                492  OLIVE   EQU    $00008080
+000015A2  =00800000                493  NAVY    EQU    $00800000
+000015A2  =00800080                494  PURPLE  EQU    $00800080
+000015A2  =00808000                495  TEAL    EQU    $00808000
+000015A2  =00808080                496  GRAY    EQU    $00808080
+000015A2  =000000FF                497  RED     EQU    $000000FF
+000015A2  =0000FF00                498  LIME    EQU    $0000FF00
+000015A2  =0000FFFF                499  YELLOW  EQU    $0000FFFF
+000015A2  =00FF0000                500  BLUE    EQU    $00FF0000
+000015A2  =00FF00FF                501  FUCHSIA EQU    $00FF00FF
+000015A2  =00FFFF00                502  AQUA    EQU    $00FFFF00
+000015A2  =00C0C0C0                503  LTGRAY  EQU    $00C0C0C0
+000015A2  =00FFFFFF                504  WHITE   EQU    $00FFFFFF
+000015A2                           505  
+000015A2                           506      END    START        ; last line of source
+
+No errors detected
+No warnings generated
+
+
+SYMBOL TABLE INFORMATION
+Symbol-name         Value
+-------------------------
+ANOTHERONE          1414
+AQUA                FFFF00
+BLACK               0
+BLUE                FF0000
+CHK0                1184
+CHK1                1224
+CLRSCREEN           14D8
+CONTINUE            14CE
+DELAY               0
+DELTAX              159E
+DELTAY              15A0
+DRAWOTHERPOINT      1324
+DXN                 1596
+DYN                 1598
+ELSE0               116A
+ELSE1               120A
+ENDIF               11B0
+ENDIF1              11B0
+FIN0                1172
+FIN1                1212
+FUCHSIA             FF00FF
+GRAY                808080
+GREEN               8000
+GRID                157B
+LIME                FF00
+LOOP                1054
+LTGRAY              C0C0C0
+MAROON              80
+MAYBEY              1250
+MISSSOUND           157C
+N                   158C
+NAVY                800000
+NEXTLINE            153A
+NEXTLINEH           155E
+NOGRID              1572
+NOPB                13E0
+NOPB0               11B0
+NOPB1               1250
+NOSMART             1250
+NOSMART2            14CE
+NOTHINGTODO         1280
+NOTPB               139A
+OLIVE               8080
+OTHERPART           1270
+OTHERPOINT          12A8
+PLAYR               13B4
+PLAYR0              1404
+PLAYR1              13CC
+PURPLE              800080
+RED                 FF
+REFRESH             11B4
+SMART               1578
+SMARTX              1579
+SMARTY              157A
+SMY                 11B0
+SNAKESQUARE         14
+SSS                 1134
+START               1000
+TEAL                808000
+WHITE               FFFFFF
+X                   159A
+XCH                 12BE
+XF                  158E
+XFE                 1592
+XOK                 12CA
+Y                   159C
+YCH                 12DE
+YELLOW              FFFF
+YF                  1590
+YFE                 1594
+YOK                 12EA
+ZEROSOUND           1585
+_00000000           1092
+_00000001           10A0
+_00000002           10AE
+_00000003           10D4
+_00000004           10FC
+_00000005           1124
