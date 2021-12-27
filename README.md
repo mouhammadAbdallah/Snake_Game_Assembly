@@ -3,18 +3,12 @@ The typical snake game which can be played manually or in smart mode (autonomous
 Usage:
 
 Up   :8
-
 Down :5
-
 right:6
-
 left :4
 
-
 smart snake     : s
-
 grid screen     : g
-
 non grid screen : h
 
 
